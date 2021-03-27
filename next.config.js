@@ -2,16 +2,8 @@
 // So, we write it in vanilla JS
 // (But you could use ES2015 features supported by your Node.js version)
 
-const debug = process.env.NODE_ENV !== "production";
-
 module.exports = {
-  exportPathMap: function () {
-    return {
-      "/": { page: "/" },
-    }
-  },
-  //assetPrefix: '',
-  assetPrefix: !debug ? '/Mortgage-Calculator/' : '',
+  assetPrefix: '/Mortgage-Calculator/',
   webpack: (config, { dev }) => {
     // Perform customizations to webpack config
     // console.log('webpack');
