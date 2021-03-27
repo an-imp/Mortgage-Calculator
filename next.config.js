@@ -8,11 +8,10 @@ module.exports = {
   exportPathMap: function () {
     return {
       "/": { page: "/" },
-      "/about": { page: "/about" },
     }
   },
   //assetPrefix: '',
-  assetPrefix: !debug ? '/Next-gh-page-example/' : '',
+  assetPrefix: !debug ? '/Mortgage-Calculator/' : '',
   webpack: (config, { dev }) => {
     // Perform customizations to webpack config
     // console.log('webpack');

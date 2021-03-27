@@ -1,4 +1,5 @@
 import React from 'react'
+import { useState, useEffect } from 'react'
 var pmt = require('formula-pmt');
 import Chart from '../components/chart'
 import BarChart from '../components/barChart'
@@ -35,125 +36,126 @@ class Main extends React.Component {
   }
 
   amort = (name, value) => {
-    const balanceAry = []
-    const labelsAry = []
-    const interestAry = []
-    const yieldAry = []
-
-    if (name || value) {
-      this.state.[name] = value
-    }
-    let {amount, rate, length, rentPerWeek, insurance, concilRate, incomeRate, increase, old} = this.state
-
-    const principal = amount
-    let yearlyRent = rentPerWeek/7*365
-    const incomeRatePercentage = incomeRate/100
-    const interest = rate * .01 * 1/12;
-    const duration = length * 12;
-    // M = ( P * r * (1+r)^n ) / ( (1+r)^n - 1 )
-    const monthlyPayment = principal *
-      (
-        (interest * Math.pow(1 + interest, duration)) /
-        (Math.pow(1 + interest, duration) - 1)
-      );
-    const totalPayment = monthlyPayment * duration;
-    const totalInterest = totalPayment - principal;
-
-    // amortization schedule - monthly split between principal and interest
-    let balance = totalPayment;
-
-    let yearlyInterestAry = []
-    let yearlyyPrincipalAry = []
-    let yearlyBalanceAry = []
-    let yearlyYieldAry = []
-    let yearlyRentAry = []
-    let yearlyDeInterestAry = []
-
-    let yearlyInterest = 0
-    let yearlyPrincipal = 0
-    let yearlyBalance = 0
-    let currentYear = 2021
-    let indexOfYear = 0
-    let taxableInterest = 0
-
-    for(let i = 1; i <= duration; i++) {
-      const monthlyInterest = interest * balance
-      const monthlyPrincipal = monthlyPayment - monthlyInterest
-      balance -= monthlyPayment;
-      if (balance < 0) {
-        balance = 0
-      }
-      yearlyInterest += monthlyInterest
-      yearlyPrincipal += monthlyPrincipal
-      if (i%12 === 0) {
-        if (old) {
-          if (indexOfYear === 0) {
-            taxableInterest = yearlyInterest * 0.875
-          }
-          if (indexOfYear === 1) {
-            taxableInterest = yearlyInterest * 0.5
-          }
-          if (indexOfYear === 2) {
-            taxableInterest = yearlyInterest * 0.25
-          }
-        }
-
-        yearlyDeInterestAry.push(taxableInterest)
-
-        if (indexOfYear > 0) {
-          yearlyRent = yearlyRent * (Math.pow(increase/100 + 1, indexOfYear))
-        }
-        yearlyRentAry.push(yearlyRent)
-        const taxableBalance = yearlyRent - insurance - concilRate - taxableInterest
-        const yieldbalance = yearlyRent - monthlyPayment*12 - taxableBalance * incomeRatePercentage
-        indexOfYear ++
-        if (increase === 0) {
-          yearlyYieldAry.push(yieldbalance)
-          labelsAry.push(currentYear++)
-        } else if (indexOfYear < 10) {
-          yearlyYieldAry.push(yieldbalance)
-          labelsAry.push(currentYear++)
-        }
-        yearlyInterestAry.push(yearlyInterest)
-        yearlyInterest = 0
-        yearlyyPrincipalAry.push(yearlyPrincipal)
-        yearlyPrincipal = 0
-        yearlyBalanceAry.push(balance)
-      }
-    }
-
-    if (name || value) {
-      this.setState({
-         principalAry: yearlyyPrincipalAry,
-         labelsAry: labelsAry,
-         interestAry: yearlyInterestAry,
-         balanceAry: yearlyBalanceAry,
-         yieldAry: yearlyYieldAry,
-         rentAry: yearlyRentAry,
-         deInterestAry: yearlyInterestAry,
-         totalPayment: totalPayment,
-         totalInterest: totalInterest,
-         monthlyPayment: monthlyPayment,
-         displayResult: true,
-         payment: monthlyPayment * 12,
-         [name]: value,
-       });
-    } else {
-      this.setState({
-         principalAry: yearlyyPrincipalAry,
-         labelsAry: labelsAry,
-         interestAry: yearlyInterestAry,
-         balanceAry: yearlyBalanceAry,
-         yieldAry: yearlyYieldAry,
-         rentAry: yearlyRentAry,
-         deInterestAry: yearlyInterestAry,
-         totalPayment: totalPayment,
-         totalInterest: totalInterest,
-         monthlyPayment: monthlyPayment,
-         payment: monthlyPayment * 12,
-         displayResult: true,
-       });
-    }
+    console.log('amort')
+    // const balanceAry = []
+    // const labelsAry = []
+    // const interestAry = []
+    // const yieldAry = []
+    //
+    // if (name || value) {
+    //   this.state.[name] = value
+    // }
+    // let {amount, rate, length, rentPerWeek, insurance, concilRate, incomeRate, increase, old} = this.state
+    //
+    // const principal = amount
+    // let yearlyRent = rentPerWeek/7*365
+    // const incomeRatePercentage = incomeRate/100
+    // const interest = rate * .01 * 1/12;
+    // const duration = length * 12;
+    // // M = ( P * r * (1+r)^n ) / ( (1+r)^n - 1 )
+    // const monthlyPayment = principal *
+    //   (
+    //     (interest * Math.pow(1 + interest, duration)) /
+    //     (Math.pow(1 + interest, duration) - 1)
+    //   );
+    // const totalPayment = monthlyPayment * duration;
+    // const totalInterest = totalPayment - principal;
+    //
+    // // amortization schedule - monthly split between principal and interest
+    // let balance = totalPayment;
+    //
+    // let yearlyInterestAry = []
+    // let yearlyyPrincipalAry = []
+    // let yearlyBalanceAry = []
+    // let yearlyYieldAry = []
+    // let yearlyRentAry = []
+    // let yearlyDeInterestAry = []
+    //
+    // let yearlyInterest = 0
+    // let yearlyPrincipal = 0
+    // let yearlyBalance = 0
+    // let currentYear = 2021
+    // let indexOfYear = 0
+    // let taxableInterest = 0
+    //
+    // for(let i = 1; i <= duration; i++) {
+    //   const monthlyInterest = interest * balance
+    //   const monthlyPrincipal = monthlyPayment - monthlyInterest
+    //   balance -= monthlyPayment;
+    //   if (balance < 0) {
+    //     balance = 0
+    //   }
+    //   yearlyInterest += monthlyInterest
+    //   yearlyPrincipal += monthlyPrincipal
+    //   if (i%12 === 0) {
+    //     if (old) {
+    //       if (indexOfYear === 0) {
+    //         taxableInterest = yearlyInterest * 0.875
+    //       }
+    //       if (indexOfYear === 1) {
+    //         taxableInterest = yearlyInterest * 0.5
+    //       }
+    //       if (indexOfYear === 2) {
+    //         taxableInterest = yearlyInterest * 0.25
+    //       }
+    //     }
+    //
+    //     yearlyDeInterestAry.push(taxableInterest)
+    //
+    //     if (indexOfYear > 0) {
+    //       yearlyRent = yearlyRent * (Math.pow(increase/100 + 1, indexOfYear))
+    //     }
+    //     yearlyRentAry.push(yearlyRent)
+    //     const taxableBalance = yearlyRent - insurance - concilRate - taxableInterest
+    //     const yieldbalance = yearlyRent - monthlyPayment*12 - taxableBalance * incomeRatePercentage
+    //     indexOfYear ++
+    //     if (increase === 0) {
+    //       yearlyYieldAry.push(yieldbalance)
+    //       labelsAry.push(currentYear++)
+    //     } else if (indexOfYear < 10) {
+    //       yearlyYieldAry.push(yieldbalance)
+    //       labelsAry.push(currentYear++)
+    //     }
+    //     yearlyInterestAry.push(yearlyInterest)
+    //     yearlyInterest = 0
+    //     yearlyyPrincipalAry.push(yearlyPrincipal)
+    //     yearlyPrincipal = 0
+    //     yearlyBalanceAry.push(balance)
+    //   }
+    // }
+    //
+    // if (name || value) {
+    //   this.setState({
+    //      principalAry: yearlyyPrincipalAry,
+    //      labelsAry: labelsAry,
+    //      interestAry: yearlyInterestAry,
+    //      balanceAry: yearlyBalanceAry,
+    //      yieldAry: yearlyYieldAry,
+    //      rentAry: yearlyRentAry,
+    //      deInterestAry: yearlyInterestAry,
+    //      totalPayment: totalPayment,
+    //      totalInterest: totalInterest,
+    //      monthlyPayment: monthlyPayment,
+    //      displayResult: true,
+    //      payment: monthlyPayment * 12,
+    //      [name]: value,
+    //    });
+    // } else {
+    //   this.setState({
+    //      principalAry: yearlyyPrincipalAry,
+    //      labelsAry: labelsAry,
+    //      interestAry: yearlyInterestAry,
+    //      balanceAry: yearlyBalanceAry,
+    //      yieldAry: yearlyYieldAry,
+    //      rentAry: yearlyRentAry,
+    //      deInterestAry: yearlyInterestAry,
+    //      totalPayment: totalPayment,
+    //      totalInterest: totalInterest,
+    //      monthlyPayment: monthlyPayment,
+    //      payment: monthlyPayment * 12,
+    //      displayResult: true,
+    //    });
+    // }
 
   }
 
@@ -230,16 +232,16 @@ class Main extends React.Component {
               </div>
               <br/><br/>
               <div className="col-6 col-xs">
-                <BarChart data={this.state} />
+                // <BarChart data={this.state} />
               </div>
 
               <div className="col-6 col-xs">
-                <Chart data={this.state} />
+                // <Chart data={this.state} />
               </div>
 
               <div className="col-12 col-xs">
                 <br/>
-                <Table data={this.state} />
+                // <Table data={this.state} />
               </div>
             </div>
           )}
