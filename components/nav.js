@@ -5,7 +5,7 @@ const Nav = () => {
         <a className="py-2" href="">
 
         </a>
-        <a className="py-2 d-none d-md-inline-block" href="https://google.co.nz">About</a>
+        <a className="py-2 d-none d-md-inline-block" target="_blank" href="https://www.interest.co.nz/property/109638/government-releases-housing-policy-package-bright-line-test-extended-interest">About</a>
       </div>
     </nav>
   )

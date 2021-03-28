@@ -9,6 +9,7 @@ const BarChart = (props) => {
         barThickness: 6,
         maxBarThickness: 8,
         minBarLength: 2,
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
         data: props.data.yieldAry || []
     }]
   };
@@ -23,11 +24,11 @@ const BarChart = (props) => {
             maintainAspectRatio : false,
             title:{
               display:true,
-              text:'Yield return',
+              text:'Return',
               fontSize:20
             },
             legend:{
-              display:true,
+              display:false,
               position:'right'
             }
           }}

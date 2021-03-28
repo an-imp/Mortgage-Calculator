@@ -47,7 +47,7 @@ class Main extends React.Component {
     let {amount, rate, length, rentPerWeek, insurance, concilRate, incomeRate, increase, old} = this.state
 
     const principal = amount
-    let yearlyRent = rentPerWeek/7*365
+    let yearlyRent = rentPerWeek*52
     const incomeRatePercentage = incomeRate/100
     const interest = rate * .01 * 1/12;
     const duration = length * 12;
@@ -98,15 +98,22 @@ class Main extends React.Component {
             taxableInterest = yearlyInterest * 0.25
           }
         }
+        if (!old || indexOfYear > 2) {
+          taxableInterest = 0
+        }
 
         yearlyDeInterestAry.push(taxableInterest)
 
-        if (indexOfYear > 0) {
+        if (increase>0 && indexOfYear > 0) {
           yearlyRent = yearlyRent * (Math.pow(increase/100 + 1, indexOfYear))
         }
         yearlyRentAry.push(yearlyRent)
-        const taxableBalance = yearlyRent - insurance - concilRate - taxableInterest
-        const yieldbalance = yearlyRent - monthlyPayment*12 - taxableBalance * incomeRatePercentage
+        let taxableBalance = yearlyRent - insurance - concilRate - taxableInterest
+        if (taxableBalance <= 0) {
+          taxableBalance = 0
+        }
+
+        const yieldbalance = yearlyRent - monthlyPayment*12 - (taxableBalance * incomeRatePercentage)
         indexOfYear ++
         if (increase === 0) {
           yearlyYieldAry.push(yieldbalance)
@@ -131,7 +138,7 @@ class Main extends React.Component {
          balanceAry: yearlyBalanceAry,
          yieldAry: yearlyYieldAry,
          rentAry: yearlyRentAry,
-         deInterestAry: yearlyInterestAry,
+         deInterestAry: yearlyDeInterestAry,
          totalPayment: totalPayment,
          totalInterest: totalInterest,
          monthlyPayment: monthlyPayment,
@@ -147,7 +154,7 @@ class Main extends React.Component {
          balanceAry: yearlyBalanceAry,
          yieldAry: yearlyYieldAry,
          rentAry: yearlyRentAry,
-         deInterestAry: yearlyInterestAry,
+         deInterestAry: yearlyDeInterestAry,
          totalPayment: totalPayment,
          totalInterest: totalInterest,
          monthlyPayment: monthlyPayment,
@@ -173,32 +180,32 @@ class Main extends React.Component {
           <div className="row">
             <div className="col-4 col-md">
               <label>Loan amount:<br/>
-                <input onChange={this.handleChange} type="text" name="amount" value={this.state.amount} />
+                <input onChange={this.handleChange} type="number" name="amount" value={this.state.amount} />
               </label><br/>
               <label>Interest rate %:<br/>
-                <input onChange={this.handleChange} type="text" name="rate" value={this.state.rate} />
+                <input onChange={this.handleChange} type="number" name="rate" value={this.state.rate} />
               </label><br/>
               <label>Loan term in years:<br/>
-                <input onChange={this.handleChange} type="text" name="length" value={this.state.length} />
+                <input onChange={this.handleChange} type="number" name="length" value={this.state.length} />
               </label><br/>
             </div>
             <div className="col-4 col-md">
               <label>Rent per week:<br/>
-                <input onChange={this.handleChange} type="text" name="rentPerWeek" value={this.state.rentPerWeek} />
+                <input onChange={this.handleChange} type="number" name="rentPerWeek" value={this.state.rentPerWeek} />
               </label><br/>
               <label>Insurance per year:<br/>
-                <input onChange={this.handleChange} type="text" name="insurance" value={this.state.insurance} />
+                <input onChange={this.handleChange} type="number" name="insurance" value={this.state.insurance} />
               </label><br/>
               <label>Council rate per year:<br/>
-                <input onChange={this.handleChange} type="text" name="concilRate" value={this.state.concilRate} />
+                <input onChange={this.handleChange} type="number" name="concilRate" value={this.state.concilRate} />
               </label><br/>
             </div>
             <div className="col-4 col-md">
               <label>Rent increase per year %:<br/>
-                <input onChange={this.handleChange} type="text" name="increase" value={this.state.increase} />
+                <input onChange={this.handleChange} type="number" name="increase" value={this.state.increase} />
               </label><br/>
               <label>Tax rate (min 17.5) %:<br/>
-                <input onChange={this.handleChange} type="text" name="incomeRate" value={this.state.incomeRate} />
+                <input onChange={this.handleChange} type="number" name="incomeRate" value={this.state.incomeRate} />
               </label><br/>
               <label>New build or bought before 27th March, 2021:<br/>
                 <input onChange={this._onChange} type="checkbox" name="old" checked={this.state.old} />
@@ -222,11 +229,18 @@ class Main extends React.Component {
                 </div>
                 <div className="card-body">
                   <h5 className="card-title">Table loan schedule</h5>
-                  <p>${this.state.amount} at {this.state.rate}% interest</p>
+                  <p>${this.state.amount.toFixed(2)} at {this.state.rate.toFixed(2)}% interest</p>
                   <p>with {this.state.length * 12} monthly payments</p>
-                  <p>Total Payments: $ {this.state.totalPayment}</p>
-                  <p>Total Interest: $ {this.state.totalInterest}</p>
-                </div>
+                  <p>Total Payments: $ {this.state.totalPayment.toFixed(2)}</p>
+                  <p>Total Interest: $ {this.state.totalInterest.toFixed(2)}</p>
+                  <hr />
+                  <p>Return = Total rent - loan payment - (total rent - deductible interest - council rate - insurance) * tax rate</p>
+                  <p>Example for year 2021:</p>
+                  <p>Total rent = ${(this.state.rentPerWeek*52).toFixed(2)}</p>
+                  <p>Loan payment = ${(this.state.monthlyPayment*12).toFixed(2)}</p>
+                  <p>Tax to pay = (${(this.state.rentPerWeek*52)} - ${(this.state.deInterestAry[0]).toFixed(2)} - ${(this.state.concilRate)} - ${(this.state.insurance)}) * ${(this.state.incomeRate)}% </p>
+                  <p>Return = Total rent - Loan payment - Tax to pay = ${(this.state.yieldAry[0]).toFixed(2)} </p>
+                  </div>
                 </div>
               </div>
               <br/><br/>

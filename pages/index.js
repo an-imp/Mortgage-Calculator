@@ -5,6 +5,12 @@ import Body from '../components/body'
 import Main from '../components/main'
 import {Line} from 'react-chartjs-2';
 
+const divStyle = {
+  position: 'fixed',
+  bottom: 0,
+  right: 0,
+  padding: '10px',
+};
 
 const Home = () => (
   <div>
@@ -17,7 +23,10 @@ const Home = () => (
     </Head>
     <Nav />
     <Body />
+    <div style={divStyle}>V Hu
+    </div>
   </div>
+
 )
 
 export default Home

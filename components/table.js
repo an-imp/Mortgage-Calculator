@@ -14,7 +14,7 @@ const Table = (props) => {
               <th scope="col">Loan Balance Amount</th>
               <th scope="col">Rent per year</th>
               <th scope="col">Deductible Interest</th>
-              <th scope="col">Yield per year</th>
+              <th scope="col">Return per year</th>
             </tr>
           </thead>
           <tbody>
