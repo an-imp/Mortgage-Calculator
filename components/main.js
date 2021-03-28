@@ -178,7 +178,7 @@ class Main extends React.Component {
       <React.Fragment>
         <div className="container">
           <div className="row">
-            <div className="col-4 col-md">
+            <div className="col-md-4 col-md">
               <label>Loan amount:<br/>
                 <input onChange={this.handleChange} type="number" name="amount" value={this.state.amount} />
               </label><br/>
@@ -189,7 +189,7 @@ class Main extends React.Component {
                 <input onChange={this.handleChange} type="number" name="length" value={this.state.length} />
               </label><br/>
             </div>
-            <div className="col-4 col-md">
+            <div className="col-md-4 col-md">
               <label>Rent per week:<br/>
                 <input onChange={this.handleChange} type="number" name="rentPerWeek" value={this.state.rentPerWeek} />
               </label><br/>
@@ -200,7 +200,7 @@ class Main extends React.Component {
                 <input onChange={this.handleChange} type="number" name="concilRate" value={this.state.concilRate} />
               </label><br/>
             </div>
-            <div className="col-4 col-md">
+            <div className="col-md-4 col-md">
               <label>Rent increase per year %:<br/>
                 <input onChange={this.handleChange} type="number" name="increase" value={this.state.increase} />
               </label><br/>
@@ -244,11 +244,11 @@ class Main extends React.Component {
                 </div>
               </div>
               <br/><br/>
-              <div className="col-6 col-xs">
+              <div className="col-md-6 col-xs">
                 <BarChart data={this.state} />
               </div>
 
-              <div className="col-6 col-xs">
+              <div className="col-md-6 col-xs">
                 <Chart data={this.state} />
               </div>
 

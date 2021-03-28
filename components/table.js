@@ -2,10 +2,10 @@ import React from 'react'
 
 const Table = (props) => {
   return (
-    <div>
+    <div className="table-responsive">
       <br></br>
-        <table className="table">
-          <thead>
+        <table className="table table-striped">
+          <thead className="thead-dark">
             <tr>
               <th scope="col">#</th>
               <th scope="col">Loan Payment Amount</th>
