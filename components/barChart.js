@@ -24,7 +24,7 @@ const BarChart = (props) => {
             maintainAspectRatio : false,
             title:{
               display:true,
-              text:'Return',
+              text:'Annual return',
               fontSize:20
             },
             legend:{

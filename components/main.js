@@ -4,7 +4,7 @@ var pmt = require('formula-pmt');
 import Chart from '../components/chart'
 import BarChart from '../components/barChart'
 import Table from '../components/table'
-
+import TableIo from '../components/tableIo'
 
 class Main extends React.Component {
   constructor(props) {
@@ -31,7 +31,8 @@ class Main extends React.Component {
       increase: 0,
       old: true,
       displayResult: false,
-      payment: 0
+      payment: 0,
+      interestOnly: false,
     }
   }
 
@@ -44,19 +45,26 @@ class Main extends React.Component {
     if (name || value) {
       this.state.[name] = value
     }
-    let {amount, rate, length, rentPerWeek, insurance, concilRate, incomeRate, increase, old} = this.state
-
+    let {amount, rate, length, rentPerWeek, insurance, concilRate, incomeRate, increase, old, interestOnly} = this.state
     const principal = amount
     let yearlyRent = rentPerWeek*52
     const incomeRatePercentage = incomeRate/100
     const interest = rate * .01 * 1/12;
     const duration = length * 12;
+    let monthlyPayment = 0
     // M = ( P * r * (1+r)^n ) / ( (1+r)^n - 1 )
-    const monthlyPayment = principal *
+    if (!interestOnly) {
+      monthlyPayment = principal *
       (
         (interest * Math.pow(1 + interest, duration)) /
         (Math.pow(1 + interest, duration) - 1)
       );
+    }
+
+    // multiply the amount you borrow (a) by the monthly interest rate, which is the annual interest rate (r) divided by 12
+    if (interestOnly) {
+      monthlyPayment = principal * rate * .01 / 12
+    }
     const totalPayment = monthlyPayment * duration;
     const totalInterest = totalPayment - principal;
 
@@ -77,35 +85,79 @@ class Main extends React.Component {
     let indexOfYear = 0
     let taxableInterest = 0
 
-    for(let i = 1; i <= duration; i++) {
-      const monthlyInterest = interest * balance
-      const monthlyPrincipal = monthlyPayment - monthlyInterest
-      balance -= monthlyPayment;
-      if (balance < 0) {
-        balance = 0
+    if (!interestOnly) {
+      for(let i = 1; i <= duration; i++) {
+        const monthlyInterest = interest * balance
+        const monthlyPrincipal = monthlyPayment - monthlyInterest
+        balance -= monthlyPayment;
+        if (balance < 0) {
+          balance = 0
+        }
+        yearlyInterest += monthlyInterest
+        yearlyPrincipal += monthlyPrincipal
+        if (i%12 === 0) {
+          if (old) {
+            if (indexOfYear === 0) {
+              taxableInterest = yearlyInterest * 0.875
+            }
+            if (indexOfYear === 1) {
+              taxableInterest = yearlyInterest * 0.5
+            }
+            if (indexOfYear === 2) {
+              taxableInterest = yearlyInterest * 0.25
+            }
+          }
+          if (!old || indexOfYear > 2) {
+            taxableInterest = 0
+          }
+
+          yearlyDeInterestAry.push(taxableInterest)
+
+          if (increase>0 && indexOfYear > 0) {
+            yearlyRent = yearlyRent * (Math.pow(increase/100 + 1, indexOfYear))
+          }
+          yearlyRentAry.push(yearlyRent)
+          let taxableBalance = yearlyRent - insurance - concilRate - taxableInterest
+          if (taxableBalance <= 0) {
+            taxableBalance = 0
+          }
+
+          const yieldbalance = yearlyRent - monthlyPayment*12 - (taxableBalance * incomeRatePercentage)
+          indexOfYear ++
+          if (increase === 0) {
+            yearlyYieldAry.push(yieldbalance)
+            labelsAry.push(currentYear++)
+          } else if (indexOfYear < 10) {
+            yearlyYieldAry.push(yieldbalance)
+            labelsAry.push(currentYear++)
+          }
+          yearlyInterestAry.push(yearlyInterest)
+          yearlyInterest = 0
+          yearlyyPrincipalAry.push(yearlyPrincipal)
+          yearlyPrincipal = 0
+          yearlyBalanceAry.push(balance)
+        }
       }
-      yearlyInterest += monthlyInterest
-      yearlyPrincipal += monthlyPrincipal
-      if (i%12 === 0) {
+    } else {
+      for(let i = 0; i < 5; i++) {
+        yearlyInterest = monthlyPayment * 12
         if (old) {
-          if (indexOfYear === 0) {
+          if (i === 0) {
             taxableInterest = yearlyInterest * 0.875
           }
-          if (indexOfYear === 1) {
+          if (i === 1) {
             taxableInterest = yearlyInterest * 0.5
           }
-          if (indexOfYear === 2) {
+          if (i === 2) {
             taxableInterest = yearlyInterest * 0.25
           }
         }
-        if (!old || indexOfYear > 2) {
+        if (!old ||  i > 2) {
           taxableInterest = 0
         }
-
         yearlyDeInterestAry.push(taxableInterest)
-
-        if (increase>0 && indexOfYear > 0) {
-          yearlyRent = yearlyRent * (Math.pow(increase/100 + 1, indexOfYear))
+        if (increase>0 && i > 0) {
+          yearlyRent = yearlyRent * (Math.pow(increase/100 + 1, i))
         }
         yearlyRentAry.push(yearlyRent)
         let taxableBalance = yearlyRent - insurance - concilRate - taxableInterest
@@ -113,20 +165,14 @@ class Main extends React.Component {
           taxableBalance = 0
         }
 
-        const yieldbalance = yearlyRent - monthlyPayment*12 - (taxableBalance * incomeRatePercentage)
-        indexOfYear ++
+        const yieldbalance = yearlyRent - yearlyInterest - (taxableBalance * incomeRatePercentage)
         if (increase === 0) {
           yearlyYieldAry.push(yieldbalance)
           labelsAry.push(currentYear++)
-        } else if (indexOfYear < 10) {
+        } else if (indexOfYear < 5) {
           yearlyYieldAry.push(yieldbalance)
           labelsAry.push(currentYear++)
         }
-        yearlyInterestAry.push(yearlyInterest)
-        yearlyInterest = 0
-        yearlyyPrincipalAry.push(yearlyPrincipal)
-        yearlyPrincipal = 0
-        yearlyBalanceAry.push(balance)
       }
     }
 
@@ -166,11 +212,15 @@ class Main extends React.Component {
   }
 
   handleChange = (e) => {
-    this.amort(e.target.name,  Number(e.target.value));
+    this.amort(e.target.name,  Number(e.target.value) || 0);
   }
 
   _onChange = () => {
     this.amort('old', !this.state.old);
+  }
+
+  _onChangeInterestOnly = () => {
+    this.amort('interestOnly', !this.state.interestOnly);
   }
 
   render() {
@@ -180,32 +230,32 @@ class Main extends React.Component {
           <div className="row">
             <div className="col-md-4 col-md">
               <label>Loan amount:<br/>
-                <input onChange={this.handleChange} type="number" name="amount" value={this.state.amount} />
+                <input onChange={this.handleChange} type="text" name="amount" value={this.state.amount} />
               </label><br/>
               <label>Interest rate %:<br/>
-                <input onChange={this.handleChange} type="number" name="rate" value={this.state.rate} />
+                <input onChange={this.handleChange} type="text" name="rate" value={this.state.rate} />
               </label><br/>
               <label>Loan term in years:<br/>
-                <input onChange={this.handleChange} type="number" name="length" value={this.state.length} />
+                <input onChange={this.handleChange} type="text" name="length" value={this.state.length} />
               </label><br/>
             </div>
             <div className="col-md-4 col-md">
               <label>Rent per week:<br/>
-                <input onChange={this.handleChange} type="number" name="rentPerWeek" value={this.state.rentPerWeek} />
+                <input onChange={this.handleChange} type="text" name="rentPerWeek" value={this.state.rentPerWeek} />
               </label><br/>
               <label>Insurance per year:<br/>
-                <input onChange={this.handleChange} type="number" name="insurance" value={this.state.insurance} />
+                <input onChange={this.handleChange} type="text" name="insurance" value={this.state.insurance} />
               </label><br/>
               <label>Council rate per year:<br/>
-                <input onChange={this.handleChange} type="number" name="concilRate" value={this.state.concilRate} />
+                <input onChange={this.handleChange} type="text" name="concilRate" value={this.state.concilRate} />
               </label><br/>
             </div>
             <div className="col-md-4 col-md">
               <label>Rent increase per year %:<br/>
-                <input onChange={this.handleChange} type="number" name="increase" value={this.state.increase} />
+                <input onChange={this.handleChange} type="text" name="increase" value={this.state.increase} />
               </label><br/>
               <label>Tax rate (min 17.5) %:<br/>
-                <input onChange={this.handleChange} type="number" name="incomeRate" value={this.state.incomeRate} />
+                <input onChange={this.handleChange} type="text" name="incomeRate" value={this.state.incomeRate} />
               </label><br/>
               <label>New build or bought before 27th March, 2021:<br/>
                 <input onChange={this._onChange} type="checkbox" name="old" checked={this.state.old} />
@@ -214,12 +264,16 @@ class Main extends React.Component {
           </div>
           <div className="row">
             <div className="col-12 col-md">
+            <br/>
+            <label>Interest only (show 5 years only):<br/>
+              <input onChange={this._onChangeInterestOnly} type="checkbox" name="interestOnly" checked={this.state.interestOnly} />
+            </label><br/>
               <br/>
               <button type="button" className="btn btn-success" onClick={this.amort}>Submit</button>
               <br/><br/><br/><br/>
             </div>
           </div>
-          {this.state.displayResult && (
+          {this.state.displayResult && !this.state.interestOnly && (
             <div className="row">
               <div className="col-12 col-xs">
               <br/><br/>
@@ -242,6 +296,7 @@ class Main extends React.Component {
                   <p>Return = Total rent - Loan payment - Tax to pay = ${(this.state.yieldAry[0]).toFixed(2)} </p>
                   </div>
                 </div>
+                <br/><br/><br/><br/>
               </div>
               <br/><br/>
               <div className="col-md-6 col-xs">
@@ -258,6 +313,42 @@ class Main extends React.Component {
               </div>
             </div>
           )}
+          {this.state.displayResult && this.state.interestOnly && (
+            <div className="row">
+              <div className="col-12 col-xs">
+              <br/><br/>
+              <div className="card">
+                <div className="card-header">
+                  Result
+                </div>
+                <div className="card-body">
+                  <h5 className="card-title">Interest only schedule</h5>
+                  <p>${this.state.amount.toFixed(2)} at {this.state.rate.toFixed(2)}% interest</p>
+                  <p>with 60 monthly payments</p>
+                  <p>Monthly Payments: $ {this.state.monthlyPayment.toFixed(2)}</p>
+                  <p>Annual Payments: $ {(this.state.monthlyPayment*12).toFixed(2)}</p>
+                  <hr />
+                  <p>Return = Total rent - loan payment - (total rent - deductible interest - council rate - insurance) * tax rate</p>
+                  <p>Example for year 2021:</p>
+                  <p>Total rent = ${(this.state.rentPerWeek*52).toFixed(2)}</p>
+                  <p>Loan payment = ${(this.state.monthlyPayment*12).toFixed(2)}</p>
+                  <p>Tax to pay = (${(this.state.rentPerWeek*52)} - ${(this.state.deInterestAry[0]).toFixed(2)} - ${(this.state.concilRate)} - ${(this.state.insurance)}) * ${(this.state.incomeRate)}% </p>
+                  <p>Return = Total rent - Loan payment - Tax to pay = ${(this.state.yieldAry[0]).toFixed(2)} </p>
+                  </div>
+                </div>
+                <br/><br/><br/><br/>
+              </div>
+              <br/><br/>
+              <div className="col-md-6 col-xs">
+                <BarChart data={this.state} />
+              </div>
+              <div className="col-md-6 col-xs">
+                <TableIo data={this.state} />
+              </div>
+            </div>
+          )}
+          <br/><br/><br/><br/>
+
         </div>
       </React.Fragment>
     )

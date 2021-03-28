@@ -60,7 +60,7 @@ const Chart = (props) => {
           maintainAspectRatio : false,
           title:{
             display:true,
-            text:'Loan table',
+            text: 'Table loan',
             fontSize:20
           },
         }}
